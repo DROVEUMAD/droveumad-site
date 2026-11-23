@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DROVEUMAD — The Studio</title>
+<link rel="preload" href="fonts/GeneralSans-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  :root{--lav:#D6D4FD;--ink:#000;--paper:#F9F9FA;--grey:#E1E1E1;--ease:cubic-bezier(.2,.7,.2,1)}
+  *{box-sizing:border-box}
+  @font-face{font-family:'General Sans';src:url('fonts/GeneralSans-Variable.woff2') format('woff2');font-weight:200 700;font-style:normal;font-display:swap}
+  @font-face{font-family:'General Sans';src:url('fonts/GeneralSans-VariableItalic.woff2') format('woff2');font-weight:200 700;font-style:italic;font-display:swap}
+  html,body{margin:0;height:100%;background:#0a0a0a;color:var(--paper);font-family:'General Sans',sans-serif;overflow:hidden}
+  *{font-family:inherit}
+  .mono{font-family:'General Sans',sans-serif;font-variant-numeric:tabular-nums;font-weight:500}
+  button{font:inherit;color:inherit}
+  a{color:inherit}
+  #stage{position:fixed;inset:0;transition:filter .6s var(--ease), transform .8s var(--ease)}
+  #stage canvas{display:block;width:100%;height:100%}
+  /* SOCIAL: the digital standee, warped onto the screen in the render */
+  #standee{position:absolute;left:0;top:0;width:360px;height:638px;transform-origin:0 0;overflow:hidden;background:#000;pointer-events:none;visibility:hidden;backface-visibility:hidden}
+  #standee .sd-layer{position:absolute;inset:0;opacity:0;will-change:opacity,transform}
+  #standee .sd-poster .sd-main{position:absolute;top:0;left:0;height:100%;width:auto;max-width:none;display:block}
+  #standee .sd-tile{display:flex;align-items:center;justify-content:center}
+  #standee .sd-tile{overflow:hidden}
+  #standee .sd-tile img{width:185%;max-width:none;display:block;flex:none}
+  #standee .sd-glass{position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.10) 0%,rgba(255,255,255,0) 38%),repeating-linear-gradient(0deg,rgba(0,0,0,.10) 0 1px,transparent 1px 3px);mix-blend-mode:screen;opacity:.55}
+  body.dim #stage{filter:blur(14px) brightness(.45) saturate(.8)}
+  #veil{position:fixed;inset:0;background:#000;z-index:50;pointer-events:none;transition:opacity 1.2s ease}
+  body.ready #veil{opacity:0}
+
+  /* corner UI, plain text like the reference */
+  .corner{position:fixed;z-index:20;display:flex;gap:28px;align-items:center;font-size:15px;font-weight:600;letter-spacing:.01em}
+  .corner a,.corner button{background:none;border:0;padding:8px 0;cursor:pointer;text-decoration:none;color:var(--paper);transition:color .2s ease}
+  .corner a:hover,.corner button:hover{color:var(--lav)}
+  .tl{left:28px;top:18px}.tr{right:28px;top:18px}.bl{left:28px;bottom:18px}.br{right:28px;bottom:18px}
+  .tc{left:50%;top:22px;transform:translateX(-50%)}
+  .tc img{height:13px;display:block}
+  .br{font-size:12px;font-weight:500;color:#9a9a9a}
+  .cta{background:var(--lav)!important;color:#000!important;border-radius:999px;padding:9px 16px!important}
+  .cta:hover{background:#fff!important}
+  .hint{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:20;font-size:11px;letter-spacing:.08em;color:#8e8e8e;transition:opacity .4s ease;pointer-events:none}
+  body.dim .hint,body.dim .hotspot{opacity:0;pointer-events:none}
+
+  /* hotspots */
+  #hotspots{position:fixed;inset:0;z-index:10;pointer-events:none}
+  .hotspot{position:absolute;left:0;top:0;pointer-events:auto;width:30px;height:30px;margin:-59px 0 0 -15px;border-radius:999px;border:1.5px solid rgba(255,255,255,.92);background:rgba(0,0,0,.25);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background-color .25s ease,border-color .25s ease,transform .3s var(--ease),opacity .3s ease}
+  .hotspot svg{width:12px;height:12px}
+  .hotspot .lead{position:absolute;left:50%;top:30px;width:1px;height:29px;background:linear-gradient(rgba(255,255,255,.85),rgba(255,255,255,.35));transform:translateX(-50%);pointer-events:none}
+  .hotspot .pin{position:absolute;left:50%;top:59px;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(0,0,0,.28),0 0 8px rgba(255,255,255,.6);pointer-events:none}
+  .hotspot:hover .pin,.hotspot:focus-visible .pin{background:var(--lav)}
+  .hotspot::after{content:'';position:absolute;inset:-7px;border-radius:999px;border:1px solid rgba(214,212,253,.55);animation:ping 2.4s var(--ease) infinite}
+  .hotspot:hover,.hotspot:focus-visible{background:var(--lav);border-color:var(--lav);color:#000;transform:scale(1.12);outline:none}
+  .hotspot .tag{position:absolute;left:44px;top:50%;transform:translate(-6px,-50%);opacity:0;white-space:nowrap;pointer-events:none;background:rgba(8,8,8,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:7px 12px;display:flex;gap:10px;align-items:baseline;transition:opacity .25s ease,transform .3s var(--ease);color:var(--paper)}
+  .hotspot .tag b{font-size:13px;font-weight:700;letter-spacing:.02em;text-transform:uppercase}
+  .hotspot .tag span{font-size:11px;color:#a8a8a8}
+  .hotspot:hover .tag,.hotspot:focus-visible .tag{opacity:1;transform:translate(0,-50%)}
+  @keyframes ping{0%{transform:scale(.8);opacity:.9}70%,100%{transform:scale(1.5);opacity:0}}
+
+  /* Index (the simple structure) */
+  #index{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;justify-content:flex-end;padding:90px 28px 70px;opacity:0;pointer-events:none;transition:opacity .45s ease}
+  body.index-open #index{opacity:1;pointer-events:none}
+  body.index-open #index > *{pointer-events:auto}
+  body.index-open #index ol{pointer-events:none}
+  body.index-open #index li button{pointer-events:auto}
+  #index .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px;color:#a8a8a8;font-size:12px;letter-spacing:.08em}
+  #index .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:22px;position:relative}
+  #index .fpill{position:absolute;left:0;top:0;border-radius:999px;background:var(--lav);z-index:0;pointer-events:none;transition:transform .45s cubic-bezier(.2,.8,.2,1),width .45s cubic-bezier(.2,.8,.2,1)}
+  #index .filters button{position:relative;z-index:1;transition:color .3s ease,border-color .3s ease;height:34px;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);cursor:pointer;font-size:13px;font-weight:600}
+  #index .filters button[aria-pressed=true]{background:transparent;color:#000;border-color:transparent}
+  #index ol{list-style:none;margin:0;padding:0;columns:2;column-gap:40px;max-width:1100px}
+  #index li{break-inside:avoid}
+  #index li button{background:none;border:0;padding:3px 0;cursor:pointer;display:flex;gap:14px;align-items:baseline;text-align:left;font-size:clamp(22px,2.6vw,38px);line-height:1.08;font-weight:700;letter-spacing:-.02em;color:var(--paper);opacity:0;transform:translateY(10px);transition:color .2s ease,opacity .5s var(--ease),transform .5s var(--ease)}
+  body.index-open #index li button{opacity:1;transform:none}
+  #index li button .n{font-family:'General Sans',sans-serif;font-variant-numeric:tabular-nums;font-size:12px;font-weight:400;color:#8e8e8e;letter-spacing:0;min-width:22px}
+  #index li button .y{font-family:'General Sans',sans-serif;font-variant-numeric:tabular-nums;font-size:12px;font-weight:400;color:#8e8e8e}
+  #index li button:hover,#index li button:focus-visible{color:var(--lav);outline:none}
+  #index li button[data-room]::after{content:'◎';font-size:12px;color:#8e8e8e;margin-left:2px}
+
+  /* Case panel — the simpler structure in DROVEUMAD black blocks */
+  #case{position:fixed;inset:0;z-index:40;background:#E1E1E1;color:var(--paper);overflow-y:auto;transform:translateY(100%);transition:transform .8s var(--ease);padding:2px 2px 120px}
+  body.case-open #case{transform:none}
+  .blk{background:#000;border-radius:4px}
+  #case .grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:2px}
+  #case .hero h1{margin:0;font-size:clamp(56px,11vw,190px);line-height:.85;font-weight:700;letter-spacing:-.055em;text-transform:uppercase;white-space:nowrap;overflow:hidden}
+  #case .meta{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.08em;color:#8e8e8e}
+  #case .pills{display:flex;gap:2px;align-items:center;padding:2px;border-radius:999px;background:#000;width:max-content;max-width:100%;flex-wrap:wrap}
+  #case .pill{height:32px;padding:0 12px;border-radius:999px;border:1px solid #3a3a3a;display:flex;align-items:center;font-size:13px;white-space:nowrap}
+  #case .pill.in{background:var(--paper);color:#000;border-color:var(--paper);font-weight:700;text-transform:uppercase;letter-spacing:.02em}
+  #case figure{margin:0;border-radius:4px;overflow:hidden;background:#000}
+  #case figure img{width:100%;height:100%;object-fit:cover;display:block}
+  #case figure.mf{align-self:start}
+  #case figure.mf img,#case figure.mf video{width:100%;height:auto;object-fit:contain;display:block;background:#000}
+  #case .ph{display:flex;align-items:center;justify-content:center;color:#8e8e8e;font-size:13px;min-height:420px}
+  #case .story{font-size:clamp(18px,2vw,28px);line-height:1.3;font-weight:500;margin:0}
+  .pdock{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(140%);z-index:45;display:flex;align-items:center;gap:4px;padding:5px;border-radius:999px;background:rgba(8,8,8,.58);backdrop-filter:blur(22px) saturate(160%);-webkit-backdrop-filter:blur(22px) saturate(160%);border:1px solid rgba(255,255,255,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 18px 50px rgba(0,0,0,.35);transition:transform .6s var(--ease) .15s;white-space:nowrap}
+  body.case-open .pdock{transform:translateX(-50%)}
+  .pdock button,.pdock a{height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.08);color:var(--paper);padding:0 14px;font-size:13px;font-weight:700;letter-spacing:.02em;cursor:pointer;display:flex;align-items:center;text-decoration:none}
+  .pdock .title{background:none;border:0;cursor:default;gap:8px;display:flex;align-items:center;padding:0 10px}
+  .pdock .title .mono{font-size:11px;color:#8e8e8e;font-weight:400}
+  .pdock .lav{background:var(--lav);color:#000;border-color:var(--lav)}
+  .pdock .sq{width:42px;padding:0;justify-content:center}
+
+  /* light colour control */
+  #light{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:20;display:flex;align-items:center;gap:9px;padding:7px 10px 7px 15px;border-radius:999px;background:rgba(8,8,8,.5);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.14);transition:opacity .4s ease}
+  #light .lbl{font-size:10px;letter-spacing:.12em;color:#9a9a9a;margin-right:3px}
+  .sw{position:relative;width:20px;height:20px;border-radius:50%;border:0;padding:0;background:var(--c);cursor:pointer;box-shadow:0 0 0 1.5px rgba(255,255,255,.18),0 0 10px -2px var(--c);transition:transform .2s ease,box-shadow .2s ease}
+  .sw:hover{transform:scale(1.12)}
+  .sw[aria-pressed=true]{box-shadow:0 0 0 2px #000,0 0 0 4px var(--lav)}
+  .pick{background:conic-gradient(#ff3b3b,#ffd23b,#3bff6f,#3bd8ff,#5b3bff,#ff3bd2,#ff3b3b);display:block}
+  .pick[aria-pressed=true]{background:var(--c)}
+  .pick input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;padding:0}
+  .hint{bottom:64px}
+  body.dim #light{opacity:0;pointer-events:none}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  #loading{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;font-size:11px;letter-spacing:.1em;color:#8e8e8e;transition:opacity .4s}
+  body.ready #loading{opacity:0}
+
+  @media (max-width:760px){
+    .pdock{bottom:14px;max-width:calc(100vw - 20px);gap:3px;padding:4px}
+    .pdock .title{display:none}
+    .pdock button,.pdock a{height:40px;padding:0 12px;font-size:12px}
+    .tl{gap:18px;left:16px}.tr{right:16px}.bl{left:16px}.br{display:none}
+    .tl .hide-m{display:none}
+    .tc{top:64px}
+    #index .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:22px}
+  #index .filters button{height:34px;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);cursor:pointer;font-size:13px;font-weight:600}
+  #index .filters button[aria-pressed=true]{background:transparent;color:#000;border-color:transparent}
+  #index ol{columns:1}
+    #index{padding:110px 16px 70px}
+    .hotspot .tag{left:auto;right:44px}
+    .hint{display:none}
+    #light{bottom:14px;left:auto;right:12px;transform:none;gap:7px;padding:6px 8px 6px 11px}
+    #light .lbl{display:none}
+    .sw{width:18px;height:18px}
+    #case .grid>*{grid-column:span 12!important}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none!important;animation:none!important}
+  }
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/","lenis":"https://cdn.jsdelivr.net/npm/lenis@1.3.27/dist/lenis.mjs"}}</script>
+</head>
+<body>
+  <div id="stage" aria-hidden="true">
+    <div id="standee">
+      <div class="sd-layer sd-poster"><img class="sd-main" src="standee/poster.webp" alt=""></div>
+      <div class="sd-layer sd-tile" style="background:#141414"><img src="standee/tile0.webp" alt=""></div>
+      <div class="sd-layer sd-tile" style="background:#ffc314"><img src="standee/tile2.webp" alt=""></div>
+      <div class="sd-layer sd-tile" style="background:#df493e"><img src="standee/tile3.webp" alt=""></div>
+      <div class="sd-layer sd-tile" style="background:#3753a5"><img src="standee/tile4.webp" alt=""></div>
+      <div class="sd-layer sd-tile" style="background:#189747"><img src="standee/tile5.webp" alt=""></div>
+      <div class="sd-layer sd-tile" style="background:#f4f6f8"><img src="standee/tile1.webp" alt=""></div>
+      <div class="sd-glass"></div>
+    </div>
+  </div>
+  <div id="veil"></div>
+  <div id="loading" class="mono">ENTERING THE STUDIO…</div>
+
+  <nav class="corner tl" aria-label="Primary">
+    <a href="#" class="logo" aria-label="DROVEUMAD"><img src="img/wm-white.png" alt="DROVEUMAD" style="height:12px;display:block"></a>
+    <button type="button" data-open-index>Work</button>
+    <a href="#lab" class="hide-m">Lab</a>
+    <a href="#about" class="hide-m">About</a>
+  </nav>
+  <div class="corner tr"><a class="cta" href="mailto:hello@droveumad.com">Get in touch</a></div>
+  <div class="corner bl"><button type="button" data-open-index id="indexBtn" aria-expanded="false">Index</button></div>
+  <div class="corner br mono">© DROVEUMAD · NEW DELHI</div>
+  <div class="hint mono" id="hint">HOVER A PIECE — OR CHANGE THE LIGHT</div>
+  <div id="light" role="group" aria-label="Light colour"></div>
+
+  <div id="hotspots" role="group" aria-label="Projects in the studio"></div>
+
+  <section id="index" aria-label="Index of all projects" aria-hidden="true">
+    <div class="head mono"><span>INDEX — 18 PROJECTS</span><span>◎ = IN THE STUDIO</span></div>
+    <div class="filters" id="filters" role="group" aria-label="Filter"></div>
+    <ol id="indexList"></ol>
+  </section>
+
+  <article id="case" aria-label="Project" aria-hidden="true">
+    <div id="caseBody"></div>
+  </article>
+  <nav class="pdock" aria-label="Project controls">
+    <button type="button" id="backBtn">← Back to the studio</button>
+    <span class="title"><span class="mono" id="pdNum">05</span><span id="pdName">OVERLAND</span></span>
+    <button type="button" class="sq" id="prevBtn" aria-label="Previous project">←</button>
+    <button type="button" class="sq" id="nextBtn" aria-label="Next project">→</button>
+    <a class="lav" href="mailto:hello@droveumad.com">Get in touch</a>
+  </nav>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
