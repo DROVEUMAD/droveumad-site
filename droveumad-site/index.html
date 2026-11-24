@@ -127,7 +127,17 @@
   #index .filters button{height:34px;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);cursor:pointer;font-size:13px;font-weight:600}
   #index .filters button[aria-pressed=true]{background:transparent;color:#000;border-color:transparent}
   #index ol{columns:1}
-    #index{padding:110px 16px 70px}
+    #index{padding:84px 16px 96px;justify-content:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+    body.index-open #index{pointer-events:auto}
+    body.index-open .corner{z-index:35}
+    #index{-webkit-mask-image:linear-gradient(transparent 0,#000 76px,#000 calc(100% - 92px),transparent calc(100% - 60px));mask-image:linear-gradient(transparent 0,#000 76px,#000 calc(100% - 92px),transparent calc(100% - 60px))}
+    #index .head{margin-bottom:12px;font-size:11px}
+    #index > *{flex:none}
+    #index .filters{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -16px 18px;padding:0 16px}
+    #index .filters::-webkit-scrollbar{display:none}
+    #index .filters button{flex:none;height:32px;padding:0 13px;font-size:12px}
+    #index li button{font-size:22px;line-height:1.12;gap:10px;padding:5px 0}
+    #index li button .n,#index li button .y{font-size:11px}
     .hotspot .tag{left:auto;right:44px}
     .hint{display:none}
     #light{bottom:14px;left:auto;right:12px;transform:none;gap:7px;padding:6px 8px 6px 11px}

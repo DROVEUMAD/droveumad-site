@@ -330,6 +330,7 @@ function renderIndex() {
 renderIndex();
 // the list area always keeps the height of the full ("All") list: switching categories never moves the header or filters
 function reserveListHeight() {
+  if (innerWidth <= 760) { list.style.minHeight = ''; return; }  // phones: the index is top-anchored and scrolls, nothing to reserve
   const keep = filter; const cur = [...list.children];
   list.style.minHeight = ''; buildList(shownFor('all'), false);
   const h = list.offsetHeight;
@@ -358,6 +359,15 @@ document.querySelectorAll('[data-open-index]').forEach((b) => b.addEventListener
 
 /* ================= case panel ================= */
 const caseEl = document.getElementById('case');
+function fitHeroes() {
+  document.querySelectorAll('#case .hero h1, #nextBlock > span:last-child').forEach((h) => {
+    h.style.fontSize = '';
+    const avail = h.clientWidth; let fs = parseFloat(getComputedStyle(h).fontSize);
+    for (let i = 0; i < 12 && h.scrollWidth > avail + 1 && fs > 24; i++) { fs *= avail / h.scrollWidth * 0.98; h.style.fontSize = fs + 'px'; }
+  });
+}
+addEventListener('resize', fitHeroes);
+document.fonts?.ready.then(fitHeroes);
 const caseBody = document.getElementById('caseBody');
 let current = null;
 const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -401,6 +411,7 @@ function renderCase(p) {
         <span style="font-size:clamp(56px,10vw,170px);line-height:.84;font-weight:700;letter-spacing:-.055em;text-transform:uppercase;white-space:nowrap;margin-bottom:-.12em">${esc(nextP.short)} →</span>
       </button>
     </div>`;
+    requestAnimationFrame(fitHeroes);
   document.getElementById('nextBlock').addEventListener('click', () => go(1));
   caseBody.querySelectorAll('video').forEach((v) => vidIO.observe(v));
   document.getElementById('pdNum').textContent = n;
@@ -444,6 +455,7 @@ function openAbout() {
       <div class="blk" style="grid-column:span 4;padding:28px 22px;display:flex;flex-direction:column;gap:18px"><span class="mono" style="font-size:11px;letter-spacing:.08em;color:#8e8e8e">SERVICES</span><div style="font-size:18px;font-weight:600;line-height:1.6">Creative Direction<br>Design<br>3D Illustration<br>Web Development<br>Strategy</div><span class="mono" style="font-size:11px;letter-spacing:.08em;color:#8e8e8e;margin-top:10px">CONTACT</span><span style="font-size:18px;font-weight:600">hello@droveumad.com</span></div>
       <div class="blk" style="grid-column:span 12;padding:28px 22px"><span class="mono" style="font-size:11px;letter-spacing:.08em;color:#8e8e8e">WORKED WITH</span><div style="margin-top:18px;display:flex;flex-wrap:wrap;gap:8px 28px;font-size:clamp(20px,2.4vw,34px);font-weight:700;text-transform:uppercase">${CLIENTS.map((c) => `<span>${c}</span>`).join('')}</div></div>
     </div></div>`;
+    requestAnimationFrame(fitHeroes);
   document.getElementById('pdNum').textContent = ''; document.getElementById('pdName').textContent = 'ABOUT';
   showSheet(false);
 }
@@ -456,6 +468,7 @@ function openLab() {
       <div class="blk" style="grid-column:span 4;padding:24px 20px;display:flex;flex-direction:column;justify-content:space-between;gap:24px"><div style="display:flex;flex-direction:column;gap:10px"><span class="mono" style="font-size:11px;color:#8e8e8e">01 · INTERACTIVE EXPERIMENT · 2026</span><span style="font-size:44px;font-weight:700;letter-spacing:-.02em">REFLEX</span><span style="font-size:16px;line-height:1.45;color:#d0d0d0">Thirteen feelings as glowing pills. Move closer and each one reacts the way it would to you.</span></div><a href="#reflex" class="pill in" style="width:max-content;text-decoration:none">Open →</a></div>
       ${[2, 3, 4].map((i) => `<div class="ph mono" style="grid-column:span 4;min-height:240px;border:1.5px dashed #9a9a9a;border-radius:4px;color:#555">0${i} — [ Next experiment ]</div>`).join('')}
     </div></div>`;
+    requestAnimationFrame(fitHeroes);
   document.getElementById('pdNum').textContent = ''; document.getElementById('pdName').textContent = 'LAB';
   showSheet(false);
 }
