@@ -17,6 +17,7 @@
   a{color:inherit}
   #stage{position:fixed;inset:0;transition:filter .6s var(--ease), transform .8s var(--ease)}
   #stage canvas{display:block;width:100%;height:100%}
+  #ovscreen{position:absolute;left:0;top:0;width:300px;height:400px;object-fit:cover;transform-origin:0 0;pointer-events:none;visibility:hidden;backface-visibility:hidden}
   /* SOCIAL: the digital standee, warped onto the screen in the render */
   #standee{position:absolute;left:0;top:0;width:360px;height:638px;transform-origin:0 0;overflow:hidden;background:#000;pointer-events:none;visibility:hidden;backface-visibility:hidden}
   #standee .sd-layer{position:absolute;inset:0;opacity:0;will-change:opacity,transform}
@@ -44,13 +45,13 @@
 
   /* hotspots */
   #hotspots{position:fixed;inset:0;z-index:10;pointer-events:none}
-  .hotspot{position:absolute;left:0;top:0;pointer-events:auto;width:30px;height:30px;margin:-59px 0 0 -15px;border-radius:999px;border:1.5px solid rgba(255,255,255,.92);background:rgba(0,0,0,.25);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background-color .25s ease,border-color .25s ease,transform .3s var(--ease),opacity .3s ease}
+  .hotspot{position:absolute;left:0;top:0;pointer-events:auto;width:30px;height:30px;margin:-59px 0 0 -15px;border-radius:999px;border:1.5px solid rgba(255,255,255,.92);background:rgba(0,0,0,.25);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background-color .25s ease,border-color .25s ease,scale .3s var(--ease),opacity .3s ease;will-change:translate}
   .hotspot svg{width:12px;height:12px}
   .hotspot .lead{position:absolute;left:50%;top:30px;width:1px;height:29px;background:linear-gradient(rgba(255,255,255,.85),rgba(255,255,255,.35));transform:translateX(-50%);pointer-events:none}
   .hotspot .pin{position:absolute;left:50%;top:59px;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(0,0,0,.28),0 0 8px rgba(255,255,255,.6);pointer-events:none}
   .hotspot:hover .pin,.hotspot:focus-visible .pin{background:var(--lav)}
   .hotspot::after{content:'';position:absolute;inset:-7px;border-radius:999px;border:1px solid rgba(214,212,253,.55);animation:ping 2.4s var(--ease) infinite}
-  .hotspot:hover,.hotspot:focus-visible{background:var(--lav);border-color:var(--lav);color:#000;transform:scale(1.12);outline:none}
+  .hotspot:hover,.hotspot:focus-visible{background:var(--lav);border-color:var(--lav);color:#000;scale:1.12;outline:none}
   .hotspot .tag{position:absolute;left:44px;top:50%;transform:translate(-6px,-50%);opacity:0;white-space:nowrap;pointer-events:none;background:rgba(8,8,8,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:7px 12px;display:flex;gap:10px;align-items:baseline;transition:opacity .25s ease,transform .3s var(--ease);color:var(--paper)}
   .hotspot .tag b{font-size:13px;font-weight:700;letter-spacing:.02em;text-transform:uppercase}
   .hotspot .tag span{font-size:11px;color:#a8a8a8}
@@ -58,11 +59,11 @@
   @keyframes ping{0%{transform:scale(.8);opacity:.9}70%,100%{transform:scale(1.5);opacity:0}}
 
   /* Index (the simple structure) */
-  #index{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;justify-content:flex-end;padding:90px 28px 70px;opacity:0;pointer-events:none;transition:opacity .45s ease}
-  body.index-open #index{opacity:1;pointer-events:none}
-  body.index-open #index > *{pointer-events:auto}
-  body.index-open #index ol{pointer-events:none}
-  body.index-open #index li button{pointer-events:auto}
+  /* the index sits below the nav and scrolls on its own; the nav and Close stay on top of it */
+  #index{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;justify-content:flex-start;padding:118px 28px 96px;opacity:0;pointer-events:none;transition:opacity .45s ease;overflow-y:auto;overscroll-behavior:contain;-webkit-mask-image:linear-gradient(transparent 0,#000 104px,#000 calc(100% - 96px),transparent calc(100% - 64px));mask-image:linear-gradient(transparent 0,#000 104px,#000 calc(100% - 96px),transparent calc(100% - 64px))}
+  #index > *{flex:none}
+  body.index-open #index{opacity:1;pointer-events:auto}
+  body.index-open .corner{z-index:35}
   #index .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px;color:#a8a8a8;font-size:12px;letter-spacing:.08em}
   #index .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:22px;position:relative}
   #index .fpill{position:absolute;left:0;top:0;border-radius:999px;background:var(--lav);z-index:0;pointer-events:none;transition:transform .45s cubic-bezier(.2,.8,.2,1),width .45s cubic-bezier(.2,.8,.2,1)}
@@ -70,7 +71,7 @@
   #index .filters button[aria-pressed=true]{background:transparent;color:#000;border-color:transparent}
   #index ol{list-style:none;margin:0;padding:0;columns:2;column-gap:40px;max-width:1100px}
   #index li{break-inside:avoid}
-  #index li button{background:none;border:0;padding:3px 0;cursor:pointer;display:flex;gap:14px;align-items:baseline;text-align:left;font-size:clamp(22px,2.6vw,38px);line-height:1.08;font-weight:700;letter-spacing:-.02em;color:var(--paper);opacity:0;transform:translateY(10px);transition:color .2s ease,opacity .5s var(--ease),transform .5s var(--ease)}
+  #index li button{background:none;border:0;padding:3px 0;cursor:pointer;display:flex;gap:14px;align-items:baseline;text-align:left;font-size:clamp(20px,2.1vw,32px);line-height:1.1;font-weight:700;letter-spacing:-.02em;color:var(--paper);opacity:0;transform:translateY(10px);transition:color .2s ease,opacity .5s var(--ease),transform .5s var(--ease)}
   body.index-open #index li button{opacity:1;transform:none}
   #index li button .n{font-family:'General Sans',sans-serif;font-variant-numeric:tabular-nums;font-size:12px;font-weight:400;color:#8e8e8e;letter-spacing:0;min-width:22px}
   #index li button .y{font-family:'General Sans',sans-serif;font-variant-numeric:tabular-nums;font-size:12px;font-weight:400;color:#8e8e8e}
@@ -127,12 +128,8 @@
   #index .filters button{height:34px;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);cursor:pointer;font-size:13px;font-weight:600}
   #index .filters button[aria-pressed=true]{background:transparent;color:#000;border-color:transparent}
   #index ol{columns:1}
-    #index{padding:84px 16px 96px;justify-content:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-    body.index-open #index{pointer-events:auto}
-    body.index-open .corner{z-index:35}
-    #index{-webkit-mask-image:linear-gradient(transparent 0,#000 76px,#000 calc(100% - 92px),transparent calc(100% - 60px));mask-image:linear-gradient(transparent 0,#000 76px,#000 calc(100% - 92px),transparent calc(100% - 60px))}
+    #index{padding:84px 16px 96px;-webkit-overflow-scrolling:touch;-webkit-mask-image:linear-gradient(transparent 0,#000 76px,#000 calc(100% - 92px),transparent calc(100% - 60px));mask-image:linear-gradient(transparent 0,#000 76px,#000 calc(100% - 92px),transparent calc(100% - 60px))}
     #index .head{margin-bottom:12px;font-size:11px}
-    #index > *{flex:none}
     #index .filters{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -16px 18px;padding:0 16px}
     #index .filters::-webkit-scrollbar{display:none}
     #index .filters button{flex:none;height:32px;padding:0 13px;font-size:12px}

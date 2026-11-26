@@ -212,12 +212,25 @@ function adj(m) { return [m[4] * m[8] - m[5] * m[7], m[2] * m[7] - m[1] * m[8], 
 function mm(a, b) { const c = []; for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) { let t = 0; for (let k = 0; k < 3; k++) t += a[3 * i + k] * b[3 * k + j]; c[3 * i + j] = t; } return c; }
 function mv(m, v) { return [m[0] * v[0] + m[1] * v[1] + m[2] * v[2], m[3] * v[0] + m[4] * v[1] + m[5] * v[2], m[6] * v[0] + m[7] * v[1] + m[8] * v[2]]; }
 function basis(x1, y1, x2, y2, x3, y3, x4, y4) { const m = [x1, x2, x3, y1, y2, y3, 1, 1, 1]; const v = mv(adj(m), [x4, y4, 1]); return mm(m, [v[0], 0, 0, 0, v[1], 0, 0, 0, v[2]]); }
-function placeStandee(cx, cy) {
-  const [tl, tr, br, bl] = SCREEN.map((p) => toScreen(p, cx, cy));
-  const S = basis(0, 0, SDW, 0, 0, SDH, SDW, SDH), D = basis(tl[0], tl[1], tr[0], tr[1], bl[0], bl[1], br[0], br[1]);
+// warp a flat element (w x h) onto four picture-space corners
+function warp(el, quad, w, h, cx, cy) {
+  const [tl, tr, br, bl] = quad.map((p) => toScreen(p, cx, cy));
+  const S = basis(0, 0, w, 0, 0, h, w, h), D = basis(tl[0], tl[1], tr[0], tr[1], bl[0], bl[1], br[0], br[1]);
   const t = mm(D, adj(S)); for (let i = 0; i < 9; i++) t[i] /= t[8];
-  sdEl.style.transform = `matrix3d(${t[0]},${t[3]},0,${t[6]},${t[1]},${t[4]},0,${t[7]},0,0,1,0,${t[2]},${t[5]},0,${t[8]})`;
-  sdEl.style.visibility = 'visible';
+  el.style.transform = `matrix3d(${t[0]},${t[3]},0,${t[6]},${t[1]},${t[4]},0,${t[7]},0,0,1,0,${t[2]},${t[5]},0,${t[8]})`;
+  el.style.visibility = 'visible';
+}
+function placeStandee(cx, cy) { warp(sdEl, SCREEN, SDW, SDH, cx, cy); if (ovEl) warp(ovEl, OVERLAND, OVW, OVH, cx, cy); }
+/* ---------- Overland: the animated poster plays inside its frame ---------- */
+const OVERLAND = [[0.84399, 0.37097], [0.90621, 0.41088], [0.89252, 0.53521], [0.83267, 0.49368]];
+const OVW = 300, OVH = 400;
+let ovEl = null;
+{
+  const v = document.createElement('video');
+  v.id = 'ovscreen'; v.src = 'media/overland-anim.mp4'; v.muted = true; v.loop = true; v.playsInline = true; v.autoplay = true; v.setAttribute('aria-hidden', 'true');
+  v.addEventListener('loadeddata', () => { ovEl = v; v.play().catch(() => {}); }, { once: true });
+  v.addEventListener('error', () => v.remove(), { once: true });
+  document.getElementById('stage').appendChild(v);
 }
 // the loop: poster in, hold, out; then the High Key marks cut through their colours
 const SD_LOOP = 13;
@@ -260,7 +273,7 @@ function placeSpots(cx, cy) {
   for (const s of spots) {
     const [x, y] = toScreen(s.a, cx, cy);
     const off = x < 20 || x > w - 20 || y < 110 || y > h - 60;
-    s.el.style.transform = `translate(${x}px, ${y}px)`;
+    s.el.style.translate = `${x}px ${y}px`;
     s.el.style.visibility = off ? 'hidden' : 'visible';
   }
 }
@@ -330,7 +343,7 @@ function renderIndex() {
 renderIndex();
 // the list area always keeps the height of the full ("All") list: switching categories never moves the header or filters
 function reserveListHeight() {
-  if (innerWidth <= 760) { list.style.minHeight = ''; return; }  // phones: the index is top-anchored and scrolls, nothing to reserve
+  { list.style.minHeight = ''; return; }  // the index is top-anchored and scrolls: nothing to reserve
   const keep = filter; const cur = [...list.children];
   list.style.minHeight = ''; buildList(shownFor('all'), false);
   const h = list.offsetHeight;
