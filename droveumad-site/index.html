@@ -50,6 +50,9 @@
   .hotspot .lead{position:absolute;left:50%;top:30px;width:1px;height:29px;background:linear-gradient(rgba(255,255,255,.85),rgba(255,255,255,.35));transform:translateX(-50%);pointer-events:none}
   .hotspot .pin{position:absolute;left:50%;top:59px;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(0,0,0,.28),0 0 8px rgba(255,255,255,.6);pointer-events:none}
   .hotspot:hover .pin,.hotspot:focus-visible .pin{background:var(--lav)}
+  .hotspot.flip{margin-top:29px}
+  .hotspot.flip .lead{top:-29px;background:linear-gradient(rgba(255,255,255,.35),rgba(255,255,255,.85))}
+  .hotspot.flip .pin{top:-29px}
   .hotspot::after{content:'';position:absolute;inset:-7px;border-radius:999px;border:1px solid rgba(214,212,253,.55);animation:ping 2.4s var(--ease) infinite}
   .hotspot:hover,.hotspot:focus-visible{background:var(--lav);border-color:var(--lav);color:#000;scale:1.12;outline:none}
   .hotspot .tag{position:absolute;left:44px;top:50%;transform:translate(-6px,-50%);opacity:0;white-space:nowrap;pointer-events:none;background:rgba(8,8,8,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:7px 12px;display:flex;gap:10px;align-items:baseline;transition:opacity .25s ease,transform .3s var(--ease);color:var(--paper)}

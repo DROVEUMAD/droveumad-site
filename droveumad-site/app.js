@@ -272,7 +272,8 @@ function placeSpots(cx, cy) {
   const w = innerWidth, h = innerHeight;
   for (const s of spots) {
     const [x, y] = toScreen(s.a, cx, cy);
-    const off = x < 20 || x > w - 20 || y < 110 || y > h - 60;
+    const off = x < 20 || x > w - 20 || y < 40 || y > h - 60;
+    s.el.classList.toggle('flip', y < 110);
     s.el.style.translate = `${x}px ${y}px`;
     s.el.style.visibility = off ? 'hidden' : 'visible';
   }
