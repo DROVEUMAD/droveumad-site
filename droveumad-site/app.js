@@ -423,7 +423,7 @@ function renderCase(p) {
       <div class="grid">${media}</div>
       <button type="button" class="blk" id="nextBlock" style="border:0;cursor:pointer;text-align:left;padding:20px 20px 120px;color:var(--paper);overflow-x:clip;display:flex;flex-direction:column;gap:14px;width:100%">
         <span class="mono" style="display:flex;justify-content:space-between;width:100%;font-size:11px;letter-spacing:.08em;color:#8e8e8e"><span>NEXT ↘</span><span>${num(nextP)} — ${nextP.year}</span></span>
-        <span style="font-size:clamp(56px,10vw,170px);line-height:.95;font-weight:700;letter-spacing:-.055em;text-transform:uppercase;white-space:nowrap;width:100%;padding-bottom:.04em">${esc(nextP.short)} →</span>
+        <span class="nxt" style="line-height:.95;font-weight:700;letter-spacing:-.055em;text-transform:uppercase;white-space:nowrap;width:100%;padding-bottom:.04em">${esc(nextP.short)} →</span>
       </button>
     </div>`;
     requestAnimationFrame(fitHeroes);
