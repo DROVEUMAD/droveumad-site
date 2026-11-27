@@ -376,11 +376,12 @@ const caseEl = document.getElementById('case');
 function fitHeroes() {
   document.querySelectorAll('#case .hero h1, #nextBlock > span:last-child').forEach((h) => {
     h.style.fontSize = '';
-    const avail = h.clientWidth; let fs = parseFloat(getComputedStyle(h).fontSize);
+    const avail = h.clientWidth; if (avail < 120) return; let fs = parseFloat(getComputedStyle(h).fontSize);
     for (let i = 0; i < 12 && h.scrollWidth > avail + 1 && fs > 24; i++) { fs *= avail / h.scrollWidth * 0.98; h.style.fontSize = fs + 'px'; }
   });
 }
 addEventListener('resize', fitHeroes);
+if (window.ResizeObserver) new ResizeObserver(() => fitHeroes()).observe(document.getElementById('case'));
 document.fonts?.ready.then(fitHeroes);
 const caseBody = document.getElementById('caseBody');
 let current = null;
@@ -411,7 +412,7 @@ function renderCase(p) {
   else {
     media += fig(p, list[0], 'grid-column:span 7') + info;
     const rest = list.slice(1); const span = rest.length === 1 ? 12 : rest.length % 3 === 0 ? 4 : 6;
-    rest.forEach((f) => { media += fig(p, f, `grid-column:span ${span}`); });
+    rest.forEach((f, i) => { const last = span === 6 && rest.length % 2 === 1 && i === rest.length - 1; media += fig(p, f, `grid-column:span ${last ? 12 : span}`); });
   }
   caseBody.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:2px">
@@ -420,9 +421,9 @@ function renderCase(p) {
         <h1 style="margin-bottom:-.1em">${esc(p.short)}</h1>
       </header>
       <div class="grid">${media}</div>
-      <button type="button" class="blk" id="nextBlock" style="margin-top:40px;border:0;cursor:pointer;text-align:left;padding:20px 20px 0;color:var(--paper);overflow:hidden;display:flex;flex-direction:column;gap:8px">
+      <button type="button" class="blk" id="nextBlock" style="border:0;cursor:pointer;text-align:left;padding:20px 20px 120px;color:var(--paper);overflow-x:clip;display:flex;flex-direction:column;gap:14px;width:100%">
         <span class="mono" style="display:flex;justify-content:space-between;width:100%;font-size:11px;letter-spacing:.08em;color:#8e8e8e"><span>NEXT ↘</span><span>${num(nextP)} — ${nextP.year}</span></span>
-        <span style="font-size:clamp(56px,10vw,170px);line-height:.84;font-weight:700;letter-spacing:-.055em;text-transform:uppercase;white-space:nowrap;margin-bottom:-.12em">${esc(nextP.short)} →</span>
+        <span style="font-size:clamp(56px,10vw,170px);line-height:.95;font-weight:700;letter-spacing:-.055em;text-transform:uppercase;white-space:nowrap;width:100%;padding-bottom:.04em">${esc(nextP.short)} →</span>
       </button>
     </div>`;
     requestAnimationFrame(fitHeroes);
