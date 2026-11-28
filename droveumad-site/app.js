@@ -54,9 +54,15 @@ const P = [
   { id: 'akari', name: 'Akari Trading', short: 'Akari', what: 'Brand Identity', year: '2023', tags: 'Branding', client: 'Akari Trading',
     media: ['akari-01.webp', 'akari-02.webp'],
     story: 'Brand identity for Akari Trading, from the mark to how it is used.' },
-  { id: 'mvmnt', name: 'The MVMNT · Six5Six · DesignMBA', short: 'Identities', what: 'Identities', year: '2022', tags: 'Branding', client: 'THE MVMNT, SIX5SIX, DesignMBA',
-    media: ['identities-01.webp', 'identities-02.webp', 'identities-03.webp'],
-    story: 'Three identities: THE MVMNT, SIX5SIX and DesignMBA.' },
+  { id: 'mvmnt', name: 'The MVMNT', short: 'The MVMNT', what: 'Identity', year: '2022', tags: 'Branding', client: 'THE MVMNT',
+    media: ['identities-01.webp'],
+    story: 'Identity for THE MVMNT, a hip hop collective: a monogram built from the letters, set in acid green.' },
+  { id: 'six5six', name: 'Six5Six', short: 'Six5Six', what: 'Identity', year: '2022', tags: 'Branding', client: 'SIX5SIX',
+    media: ['identities-02.webp'],
+    story: 'Wordmark for SIX5SIX: a slanted, fast-moving logotype.' },
+  { id: 'dmba', name: 'DesignMBA', short: 'DesignMBA', what: 'Identity', year: '2022', tags: 'Branding', client: 'DesignMBA',
+    media: ['identities-03.webp'],
+    story: 'Identity for DesignMBA: a pixel M on a halftone grid.' },
   { id: 'reflex', name: 'Reflex', short: 'Reflex', what: 'Interactive Experiment', year: '2026', tags: 'Lab', imgs: ['reflex'], media: [], lab: true,
     story: 'Thirteen feelings as glowing pills. Move closer and each one reacts the way it would to you.' }
 ];
@@ -80,7 +86,7 @@ const scene = new THREE.Scene();
 const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
 const IMG_A = 1920 / 1200;
-const ANCH = {"dcaw": [0.6338, 0.4806], "sales": [0.6092, 0.4045], "lat": [0.5516, 0.4283], "iaf": [0.4378, 0.1857], "overland": [0.8689, 0.4528], "takeon": [0.9441, 0.486], "provenance": [0.8442, 0.6238], "akari": [0.8983, 0.6794], "social": [0.3826, 0.2478], "lab": [0.7742, 0.4869], "cohort10": [0.7342, 0.5085], "celid": [0.7594, 0.4201], "homehancer": [0.2417, 0.4133], "badfit": [0.1716, 0.4875], "bud": [0.268, 0.5731]};
+const ANCH = {"dcaw": [0.5841, 0.4839], "sales": [0.532, 0.4355], "lat": [0.4784, 0.4915], "iaf": [0.2643, 0.3424], "overland": [0.7713, 0.3194], "takeon": [0.8391, 0.3029], "provenance": [0.7618, 0.5053], "akari": [0.8196, 0.5209], "social": [0.2184, 0.4301], "lab": [0.6902, 0.4085], "cohort10": [0.6467, 0.4623], "celid": [0.6707, 0.3489], "homehancer": [0.5453, 0.5528], "badfit": [0.1325, 0.7146], "bud": [0.3271, 0.7021], "mvmnt": [0.3039, 0.6979], "six5six": [0.1623, 0.6378], "dmba": [0.7222, 0.7226]};
 const ld = new THREE.TextureLoader();
 const loadRaw = (src) => { const t = ld.load(src); t.colorSpace = THREE.NoColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy(); return t; };
 const tBase = loadRaw('room/base.webp'), tTube = loadRaw('room/tube.webp');
@@ -172,7 +178,7 @@ const DEFAULT_LIGHT = '#ffd9b8';
 // each project's own light, used while you hover it
 const TINT = {
   bud: '#ff2a1f', overland: '#ff6fa3', iaf: '#ff7a1a', dcaw: '#c9b6ff', lab: '#ff3fb0', cohort10: '#8a5cff', social: '#3fffc8',
-  sales: '#3f8cff', lat: '#ffb36b', takeon: '#ffffff', provenance: '#e8c98a', akari: '#ff5a4d', homehancer: '#ffc2a8', badfit: '#f4f4f4', celid: '#3fd0ff'
+  sales: '#3f8cff', lat: '#ffb36b', takeon: '#ffffff', provenance: '#e8c98a', akari: '#ff5a4d', homehancer: '#ffc2a8', badfit: '#f4f4f4', celid: '#3fd0ff', mvmnt: '#c8ff00', six5six: '#ffffff', dmba: '#f2e600'
 };
 const lin = (hex) => { const c = new THREE.Color(hex); const m = Math.max(c.r, c.g, c.b, 1e-4); return new THREE.Vector3(c.r / m, c.g / m, c.b / m); };
 let userHex = DEFAULT_LIGHT;
@@ -204,7 +210,7 @@ function tint(key) { lightGoal = key && TINT[key] ? lin(TINT[key]) : lin(userHex
 
 /* ---------- hotspots ---------- */
 /* ---------- SOCIAL standee: the poster plays on the screen, warped to its corners ---------- */
-const SCREEN = [[0.36151, 0.19637], [0.39968, 0.20301], [0.4022, 0.30109], [0.36498, 0.29418]];   // TL, TR, BR, BL in picture coords
+const SCREEN = [[0.19416, 0.37398], [0.23826, 0.36495], [0.24314, 0.48608], [0.19995, 0.49678]];   // TL, TR, BR, BL in picture coords
 const sdEl = document.getElementById('standee'), SDW = 360, SDH = 638;
 const sdLayers = [...sdEl.querySelectorAll('.sd-layer')];
 const sdMain = sdEl.querySelector('.sd-main');
@@ -222,7 +228,7 @@ function warp(el, quad, w, h, cx, cy) {
 }
 function placeStandee(cx, cy) { warp(sdEl, SCREEN, SDW, SDH, cx, cy); if (ovEl) warp(ovEl, OVERLAND, OVW, OVH, cx, cy); }
 /* ---------- Overland: the animated poster plays inside its frame ---------- */
-const OVERLAND = [[0.84399, 0.37097], [0.90621, 0.41088], [0.89252, 0.53521], [0.83267, 0.49368]];
+const OVERLAND = [[0.74217, 0.25309], [0.80627, 0.25309], [0.80015, 0.38508], [0.73733, 0.38508]];
 const OVW = 300, OVH = 400;
 let ovEl = null;
 {
@@ -273,7 +279,7 @@ function placeSpots(cx, cy) {
   for (const s of spots) {
     const [x, y] = toScreen(s.a, cx, cy);
     const off = x < 20 || x > w - 20 || y < 40 || y > h - 60;
-    s.el.classList.toggle('flip', y < 110);
+    s.el.classList.toggle('flip', y < 110 || s.id === 'mvmnt');
     s.el.style.translate = `${x}px ${y}px`;
     s.el.style.visibility = off ? 'hidden' : 'visible';
   }
@@ -417,7 +423,7 @@ function renderCase(p) {
   caseBody.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:2px">
       <header class="blk hero" style="padding:16px 18px 0;overflow:hidden">
-        <div class="meta mono"><span>${n === 'LAB' ? 'LAB' : n + ' / 18'} — ${esc(p.tags).toUpperCase()}</span><span>${p.year}</span></div>
+        <div class="meta mono"><span>${n === 'LAB' ? 'LAB' : n + ' / ' + WORK.length} — ${esc(p.tags).toUpperCase()}</span><span>${p.year}</span></div>
         <h1 style="margin-bottom:-.1em">${esc(p.short)}</h1>
       </header>
       <div class="grid">${media}</div>
