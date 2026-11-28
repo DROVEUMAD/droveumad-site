@@ -162,14 +162,25 @@ function focusOn(key) {
 }
 function focusHome() { goal.cx = HOME.cx + pan; goal.cy = HOME.cy; goal.z = 1; }
 // swipe to pan (phones)
-let dragX = null;
-addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse') dragX = e.clientX; }, { passive: true });
+let dragX = null, dragT = 0, vel = 0, flinging = false;
+const SWIPE = 1.8;   // room moves faster than the finger, like a flick through the space
+const panLim = () => Math.max(0, 0.5 - baseSize()[0] / 2);
+addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse') { dragX = e.clientX; dragT = performance.now(); vel = 0; flinging = false; } }, { passive: true });
 addEventListener('pointermove', (e) => {
   if (dragX === null || document.body.classList.contains('dim')) return;
-  const [w] = baseSize(), lim = Math.max(0, 0.5 - w / 2);
-  pan = Math.max(-lim, Math.min(lim, pan - ((e.clientX - dragX) / innerWidth) * w)); dragX = e.clientX; goal.cx = HOME.cx + pan;
+  const [w] = baseSize(), lim = panLim(), now = performance.now();
+  const d = -((e.clientX - dragX) / innerWidth) * w * SWIPE, dt = Math.max(1, now - dragT);
+  pan = Math.max(-lim, Math.min(lim, pan + d)); vel = 0.8 * vel + 0.2 * (d / dt); dragX = e.clientX; dragT = now; goal.cx = HOME.cx + pan;
 }, { passive: true });
-addEventListener('pointerup', () => { dragX = null; }); addEventListener('pointercancel', () => { dragX = null; });
+function fling() {
+  if (!flinging) return;
+  const lim = panLim(); pan += vel * 16; vel *= 0.93;
+  if (pan <= -lim || pan >= lim) { pan = Math.max(-lim, Math.min(lim, pan)); vel = 0; }
+  goal.cx = HOME.cx + pan;
+  if (Math.abs(vel) > 0.00002) requestAnimationFrame(fling); else flinging = false;
+}
+const endDrag = () => { if (dragX === null) return; dragX = null; if (performance.now() - dragT < 80 && Math.abs(vel) > 0.00005) { flinging = true; requestAnimationFrame(fling); } };
+addEventListener('pointerup', endDrag); addEventListener('pointercancel', endDrag);
 stage.style.touchAction = 'pan-y';
 
 /* ---------- the light: presets, a custom colour, per-project tints, remembered ---------- */
@@ -262,15 +273,24 @@ const ALIAS = { celani: 'celid', cohort9: 'cohort10', cohort7: 'cohort10', refle
 const anchorOf = (id) => ANCH[id] || ANCH[ALIAS[id]];
 const hsWrap = document.getElementById('hotspots');
 const arrow = '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 7h8M8 4l3 3-3 3"/></svg>';
+const TOUCH = matchMedia('(hover: none)').matches;
+let armed = null;
+function arm(id) { armed = id; spots.forEach((s) => s.el.classList.toggle('on', s.id === id)); tint(id); }
+addEventListener('click', () => { if (armed) arm(null); });
+addEventListener('hashchange', () => { if (armed) arm(null); });
 const spots = Object.keys(ANCH).map((id) => {
   const p = id === 'lab' ? LABSPOT : byId[id];
   const b = document.createElement('button');
   b.className = 'hotspot'; b.type = 'button';
   b.setAttribute('aria-label', p.lab ? 'Open the Lab' : `Open ${p.name}, ${p.what}, ${p.year}`);
   b.innerHTML = arrow + '<span class="lead"></span><span class="pin"></span>' + `<span class="tag"><b>${p.short}</b><span class="mono">${num(p)} · ${p.year}</span></span>`;
-  b.addEventListener('click', () => { location.hash = id; });
+  b.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (TOUCH && armed !== id) { arm(id); return; }   // phones: first tap names it, second tap opens it
+    arm(null); location.hash = id;
+  });
   b.addEventListener('pointerenter', () => tint(id)); b.addEventListener('focus', () => tint(id));
-  b.addEventListener('pointerleave', () => tint(null)); b.addEventListener('blur', () => tint(null));
+  b.addEventListener('pointerleave', () => { if (!armed) tint(null); }); b.addEventListener('blur', () => { if (!armed) tint(null); });
   hsWrap.appendChild(b);
   return { id, el: b, a: ANCH[id] };
 });
@@ -280,6 +300,7 @@ function placeSpots(cx, cy) {
     const [x, y] = toScreen(s.a, cx, cy);
     const off = x < 20 || x > w - 20 || y < 40 || y > h - 60;
     s.el.classList.toggle('flip', y < 110 || s.id === 'mvmnt');
+    s.el.classList.toggle('tl', w < 760 ? x > w / 2 : x > w - 260);
     s.el.style.translate = `${x}px ${y}px`;
     s.el.style.visibility = off ? 'hidden' : 'visible';
   }
