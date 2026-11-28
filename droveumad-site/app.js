@@ -89,7 +89,7 @@ const IMG_A = 1920 / 1200;
 const ANCH = {"dcaw": [0.5841, 0.4839], "sales": [0.532, 0.4355], "lat": [0.4784, 0.4915], "iaf": [0.2643, 0.3424], "overland": [0.7713, 0.3194], "takeon": [0.8391, 0.3029], "provenance": [0.7618, 0.5053], "akari": [0.8196, 0.5209], "social": [0.2184, 0.4301], "lab": [0.6902, 0.4085], "cohort10": [0.6467, 0.4623], "celid": [0.6707, 0.3489], "homehancer": [0.5453, 0.5528], "badfit": [0.1325, 0.7146], "bud": [0.3271, 0.7021], "mvmnt": [0.3039, 0.6979], "six5six": [0.1623, 0.6378], "dmba": [0.7222, 0.7226]};
 const ld = new THREE.TextureLoader();
 const loadRaw = (src) => { const t = ld.load(src); t.colorSpace = THREE.NoColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy(); return t; };
-const tBase = loadRaw('room/base.webp'), tTube = loadRaw('room/tube.webp');
+const tBase = loadRaw('room/base.webp?v=c'), tTube = loadRaw('room/tube.webp?v=c');
 
 const U = {
   uBase: { value: tBase }, uTube: { value: tTube },
